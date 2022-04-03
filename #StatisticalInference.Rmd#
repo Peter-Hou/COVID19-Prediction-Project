@@ -110,7 +110,7 @@ axis(1, at = t_china_consolidate$date[which(t_china_consolidate$date %in% date_f
 lines(t_china_consolidate$date, t_china_consolidate$confirmed,  col = "orange", lty = 2, pch = 13)
 lines(t_china_consolidate$date, t_china_consolidate$death,  col = "red", lty = 3, pch = 16)
 legend("right", col = c("navyblue", "orange", "red"),
-       legend = c("First", "Second", "Third"),
+       legend = c("cured", "confirmed", "death"),
        pch  = c(3, 13, 16), lty = c(1, 2, 3))
 
                                         # Below is the visualization done by ggplot, only for pratice purpose
@@ -176,7 +176,7 @@ With our assumption, $\gamma$ is the rate of recovery of the infected population
 As $\gamma$ is dealing with recovery cases, then our sample in this case would be 
 
 ``` {r}
-recover_sample <- t_china_consolidate$Cured
+recover_sample <- t_china_consolidate$cured
 recover_sample <- diff(recover_sample, lag = 1) 
 # This is to get the data fro difference between any two days since cured is the total cases and we want each days' recovery data.
 
@@ -191,21 +191,70 @@ Now we perform **Maximum Likelihood Method** and get
     L(\theta) &=
     \Pi_{i=1^{n}}\frac{e^{(-\theta)}\theta^{y_{i}}}{y_{i}!}\\
               &=
-              (\Pi_{i=1}^{n}\frac{1}{y_{i}!})e^{-n\theta}\theta^{sum_{i=1}^{n}y_{i}}\\
-              &=Ce^{-n\theta}\theta^{sum_{i=1}^{n}y_{i}}
-			  \end{aligned}
+              (\Pi_{i=1}^{n}\frac{1}{y_{i}!})e^{-n\theta}\theta^{\sum_{i=1}^{n}y_{i}}\\
+              &=Ce^{-n\theta}\theta^{\sum_{i=1}^{n}y_{i}}
+\end{aligned}
   \end{equation}
 
 
 We write this function in R
 ``` {r}
-
-poiLF <- function(theta) {exp(-length())}
-
+poiLF <- function(theta) {exp(-length(recover_sample) * theta) * theta ^ sum(recover_sample)}
 
 ```
 
+We can directly graph poiLF to find out which theta maximizes this function, however,
 
+``` {r}
+sum(recover_sample)
+
+```
+
+The value is too big, it's going to be very difficult to visualize the likelihood function on this data and find out the point that maximizes the function. Hence, we use the loglikelihood function.
+
+``` {r}
+poiLLF <- function(theta) {
+    -length(recover_sample) * theta+sum(recover_sample) * log(theta)
+}
+
+curve(poiLLF, xlim = c(700, 1200), xlab = "theta", main = "Log-Likelihood Function")
+```
+
+From the graph, we can roughly get that the theta that maximizes the function is get around 900.
+
+``` {r}
+mle_result <- optimize(poiLLF, interval = c(800, 900),maximum = TRUE)
+mle_result
+```
+
+``` {r}
+gamma_mle <- 1/mle_result$maximum
+```
+which our estimation of gamma is 0.001145181
+
+#### Estimation of $R_0$
+\[  I(t) = I_{0}e^{(R_{0} - 1)(\gamma + \mu)t} \approx I_{0}e^{(R_{0}
+    - 1) \gamma t}  \]
+
+The relationship of $R_0$ in this original equation may be a bit hard to model. However, if we take a log at both sides of equation, we get
+
+\[ log I \sim log I_0 + (R_0 - 1) \gamma t\]
+
+It demonstrates a linear relationship between log I and the time t. Hence, we can apply simple lienar regression for modelling 
+
+
+As before, we need data for I, the confirmed_sample, but we do not need daily new increase. 
+``` {r}
+log_confirmed_sample <- log(t_china_consolidate$confirmed)
+logconfirmed_df <- data.frame(Days = 1:length(log_confirmed_sample),
+                              Log_Confirmed = log_confirmed_sample)
+
+ggplot(logconfirmed_df, aes(x = Days, y = Log_Confirmed)) + geom_point() + geom_smooth(method = "lm") + ggtitle("Log-Transformed Confirmed Cases in China")
+
+qqline(logconfirmed_df$Log_Confirmed, lwd = 2)
+qqnorm(logconfirmed_df$Log_Confirmed)
+
+```
 
 
 
