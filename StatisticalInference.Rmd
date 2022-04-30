@@ -1,5 +1,5 @@
 ---
-title: "Analysis with COVID-19 situation in China"
+title: "Analysis with COVID-19 situation in Canada"
 author: "Peter Hou"
 date: "03/05/2020"
 output:
@@ -61,20 +61,20 @@ consolidate_data_by_country <- function(country) {
     consolidate_country <- lapply(consolidate_country, sum_province_by_ctry)
     consolidate_country <- rbind(confirmed = consolidate_country$confirmed, death = consolidate_country$death, cured = consolidate_country$cured)
     consolidate_country <- consolidate_country %>% select(-Lat, -Long) # Lat and Long are used to mark the position of provinces on earth, they lost their meaning when we aggregate them. Hence, we remove them from our dataset
- 
+n 
     return(consolidate_country)
 }
 
 ```
 
-Starting from this point, the rest of the report will focus on China; but the code can be generalized for any countries. It is just China is the target country for analysis in this report.
+Starting from this point, the rest of the report will focus on Canada; but the code can be generalized for any countries. It is just Canada is the target country for analysis in this report.
 
-We now examine the consolidated data for country **China** as an example
+We now examine the consolidated data for country **Canada** as an example
 
 ``` {r}
-china_consolidate <- consolidate_data_by_country("China")
+Canada_consolidate <- consolidate_data_by_country("Canada")
 
-china_consolidate[, 1:5]
+Canada_consolidate[, 1:5]
 ```
 
 As the data now consolidate in a clear way for comparsion and demonstration. Let's visualize the COVID-19 cases changing trend.
@@ -83,21 +83,21 @@ Before the actual visualization work, we need to transpose the dataframe and cha
 
 
 ``` {r}
-t_china_consolidate <- t(china_consolidate)
-head(t_china_consolidate)
-t_china_consolidate <- t_china_consolidate[-1, ] # the row of country is not needed
-rn <- as.Date(rownames(t_china_consolidate), "X%m.%d.%y")
-head(t_china_consolidate)
-t_china_consolidate = data.frame(t_china_consolidate)
-t_china_consolidate = cbind(date = rn, t_china_consolidate)
+t_Canada_consolidate <- t(Canada_consolidate)
+head(t_Canada_consolidate)
+t_Canada_consolidate <- t_Canada_consolidate[-1, ] # the row of country is not needed
+rn <- as.Date(rownames(t_Canada_consolidate), "X%m.%d.%y")
+head(t_Canada_consolidate)
+t_Canada_consolidate = data.frame(t_Canada_consolidate)
+t_Canada_consolidate = cbind(date = rn, t_Canada_consolidate)
 
-rownames(t_china_consolidate) <- as.character(as.Date(rownames(t_china_consolidate), "X%m.%d.%y"), origin = "2020-01-22")
+rownames(t_Canada_consolidate) <- as.character(as.Date(rownames(t_Canada_consolidate), "X%m.%d.%y"), origin = "2020-01-22")
 
-str(t_china_consolidate)
+str(t_Canada_consolidate)
 
-t_china_consolidate$confirmed <- as.integer(t_china_consolidate$confirmed)
-t_china_consolidate$death <- as.integer(t_china_consolidate$death)
-t_china_consolidate$cured <- as.integer(t_china_consolidate$cured)
+t_Canada_consolidate$confirmed <- as.integer(t_Canada_consolidate$confirmed)
+t_Canada_consolidate$death <- as.integer(t_Canada_consolidate$death)
+t_Canada_consolidate$cured <- as.integer(t_Canada_consolidate$cured)
 ```
 
 ## Data Visualization
@@ -105,21 +105,21 @@ t_china_consolidate$cured <- as.integer(t_china_consolidate$cured)
 ``` {r}
 date_for_xaxis <-  c("2020-02-01", "2020-03-01", "2020-04-01")
 date_for_xaxis <- as.Date(date_for_xaxis, "%Y-%m-%d")
-plot(t_china_consolidate$date, t_china_consolidate$cured,  main = "COVID-19 Cases in China from 2020-01-22 to 2020-04-20", xlab = "Date", ylab = "Number of Cases", xaxt = "n", col = "navyblue", lty = 1, pch = 3)
-axis(1, at = t_china_consolidate$date[which(t_china_consolidate$date %in% date_for_xaxis)], labels = c("Feb", "Mar", "Apr"))
-lines(t_china_consolidate$date, t_china_consolidate$confirmed,  col = "orange", lty = 2, pch = 13)
-lines(t_china_consolidate$date, t_china_consolidate$death,  col = "red", lty = 3, pch = 16)
+plot(t_Canada_consolidate$date, t_Canada_consolidate$cured,  main = "COVID-19 Cases in Canada from 2020-01-22 to 2020-04-20", xlab = "Date", ylab = "Number of Cases", xaxt = "n", col = "navyblue", lty = 1, pch = 3)
+axis(1, at = t_Canada_consolidate$date[which(t_Canada_consolidate$date %in% date_for_xaxis)], labels = c("Feb", "Mar", "Apr"))
+lines(t_Canada_consolidate$date, t_Canada_consolidate$confirmed,  col = "orange", lty = 2, pch = 13)
+lines(t_Canada_consolidate$date, t_Canada_consolidate$death,  col = "red", lty = 3, pch = 16)
 legend("right", col = c("navyblue", "orange", "red"),
-       legend = c("First", "Second", "Third"),
+       legend = c("cured", "confirmed", "death"),
        pch  = c(3, 13, 16), lty = c(1, 2, 3))
 
                                         # Below is the visualization done by ggplot, only for pratice purpose
-reshaped_consolidate_data <- melt(t_china_consolidate, id.vars="date")
+reshaped_consolidate_data <- melt(t_Canada_consolidate, id.vars="date")
 
 head(reshaped_consolidate_data,3)
 
 p1 <- ggplot(reshaped_consolidate_data, aes(date, value, col=variable)) +
-    geom_point() +  ggtitle("China COVID-19 Record") + labs(y = "Cases Number", x = "Date", color = "Case Type") 
+    geom_point() +  ggtitle("Canada COVID-19 Record") + labs(y = "Cases Number", x = "Date", color = "Case Type") 
 
 p1
 
@@ -176,7 +176,7 @@ With our assumption, $\gamma$ is the rate of recovery of the infected population
 As $\gamma$ is dealing with recovery cases, then our sample in this case would be 
 
 ``` {r}
-recover_sample <- t_china_consolidate$Cured
+recover_sample <- t_Canada_consolidate$cured
 recover_sample <- diff(recover_sample, lag = 1) 
 # This is to get the data fro difference between any two days since cured is the total cases and we want each days' recovery data.
 
@@ -191,24 +191,84 @@ Now we perform **Maximum Likelihood Method** and get
     L(\theta) &=
     \Pi_{i=1^{n}}\frac{e^{(-\theta)}\theta^{y_{i}}}{y_{i}!}\\
               &=
-              (\Pi_{i=1}^{n}\frac{1}{y_{i}!})e^{-n\theta}\theta^{sum_{i=1}^{n}y_{i}}\\
-              &=Ce^{-n\theta}\theta^{sum_{i=1}^{n}y_{i}}
-			  \end{aligned}
+              (\Pi_{i=1}^{n}\frac{1}{y_{i}!})e^{-n\theta}\theta^{\sum_{i=1}^{n}y_{i}}\\
+              &=Ce^{-n\theta}\theta^{\sum_{i=1}^{n}y_{i}}
+\end{aligned}
   \end{equation}
 
 
 We write this function in R
 ``` {r}
-
-poiLF <- function(theta) {exp(-length())}
-
+poiLF <- function(theta) {exp(-length(recover_sample) * theta) * theta ^ sum(recover_sample)}
 
 ```
 
+We can directly graph poiLF to find out which theta maximizes this function, however,
+
+``` {r}
+sum(recover_sample)
+
+```
+
+The value is too big, it's going to be very difficult to visualize the likelihood function on this data and find out the point that maximizes the function. Hence, we use the loglikelihood function.
+
+``` {r}
+poiLLF <- function(theta) {
+    -length(recover_sample) * theta+sum(recover_sample) * log(theta)
+}
+
+curve(poiLLF, xlim = c(0, 300), xlab = "theta", main = "Log-Likelihood Function")
+```
+
+From the graph, we can roughly get that the theta that maximizes the function is get around 150.
+
+``` {r}
+mle_result <- optimize(poiLLF, interval = c(0, 300),maximum = TRUE)
+mle_result
+```
+
+``` {r}
+gamma_mle <- 1/mle_result$maximum
+```
+which our estimation of gamma is 0.001145181
+
+#### Estimation of $R_0$
+\[  I(t) = I_{0}e^{(R_{0} - 1)(\gamma + \mu)t} \approx I_{0}e^{(R_{0}
+    - 1) \gamma t}  \]
+
+The relationship of $R_0$ in this original equation may be a bit hard to model. However, if we take a log at both sides of equation, we get
+
+\[ log I = log I_0 + (R_0 - 1) \gamma t\]
+
+It demonstrates a linear relationship between log I and the time t. Hence, we can apply simple lienar regression for modelling 
 
 
+As before, we need data for I, the confirmed_sample, but we do not need daily new increase. 
+``` {r}
+# log is not defined for log(0), hence, we remove the points where the confirmed cases are of 0
 
+confirmed_sample <- t_Canada_consolidate$confirmed[t_Canada_consolidate$confirmed != 0]
+log_confirmed_sample <- log(confirmed_sample)
+logconfirmed_df <- data.frame(Days = 1:length(log_confirmed_sample),
+                              Log_Confirmed = log_confirmed_sample)
 
+ggplot(logconfirmed_df, aes(x = Days, y = Log_Confirmed)) + geom_point() + geom_smooth(method = "lm") + ggtitle("Log-Transformed Confirmed Cases in Canada")
+
+``` {r}
+log_lm <- lm(Log_Confirmed ~ Days, data = logconfirmed_df)
+summary(log_lm)
+```
+
+From the regression coefficient, we estimated that `logI \sim -0.698895 + 0.135525t`. Thus, $(R_0 - 1)\gamma = 0.135525$. We have estimated that $\hat{\gamma} = 0.0070956$. Hence, 
+\[ \hat{R_0} = \frac{0.135525}{\gamma} + 1 = 19.09989]
+
+Note that our estimated reproductive number is very high compared to any known epidemic occured in the past, which usually have an average of below 5. 
+
+The reason for such a high value of the estimate is mainly attribute to the lack of sufficient data. Reproductive number represent how many people will be infected by any one infected people. From our graph, we can see that the values of the confirmed cases skyrocketed to at the end of our data collection periods. Before that, the cases are leveled at 0. This dramatic, sudden increase is what causes the large estimate of the reproductive number.
+
+However, the confirmed cases leveled at 0 does not mean that there are no confirmed cases. It only means that no confirmed cases have chosen to take a test and find out they are positive. The initial symptom for youngsters are mild; which many people may not take a serious attention. 
+
+Hopefully, the true reproductive number should be much smaller. But we can only learn that after we have gained more comprehensive data.
 
 
 
