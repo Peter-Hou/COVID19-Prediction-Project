@@ -66,7 +66,7 @@ n
 
 ```
 
-Starting from this point, the rest of the report will focus on Canada; but the code can be generalized for any countries. It is just Canada is the target country for analysis in this report.
+Starting from this point, the rest of the report will focus on Canada; but the code can be generalized for any countries. It is just Canada, where I live in, is the target country for analysis in this report.
 
 We now examine the consolidated data for country **Canada** as an example
 
@@ -104,11 +104,11 @@ t_Canada_consolidate$cured <- as.integer(t_Canada_consolidate$cured)
 ``` {r}
 date_for_xaxis <-  c("2020-02-01", "2020-03-01", "2020-04-01")
 date_for_xaxis <- as.Date(date_for_xaxis, "%Y-%m-%d")
-plot(t_Canada_consolidate$date, t_Canada_consolidate$cured,  main = "COVID-19 Cases in Canada from 2020-01-22 to 2020-04-20", xlab = "Date", ylab = "Number of Cases", xaxt = "n", col = "navyblue", lty = 1, pch = 3)
+plot(t_Canada_consolidate$date, t_Canada_consolidate$cured,  main = "COVID-19 Cases in Canada from 2020-01-22 to 2020-04-20", xlab = "Date", ylab = "Number of Cases", ylim = c(0, 40000), xaxt = "n", col = "navyblue", lty = 1, pch = 3)
 axis(1, at = t_Canada_consolidate$date[which(t_Canada_consolidate$date %in% date_for_xaxis)], labels = c("Feb", "Mar", "Apr"))
 lines(t_Canada_consolidate$date, t_Canada_consolidate$confirmed,  col = "orange", lty = 2, pch = 13)
 lines(t_Canada_consolidate$date, t_Canada_consolidate$death,  col = "red", lty = 3, pch = 16)
-legend("right", col = c("navyblue", "orange", "red"),
+legend("topleft", col = c("navyblue", "orange", "red"),
        legend = c("cured", "confirmed", "death"),
        pch  = c(3, 13, 16), lty = c(1, 2, 3))
 
@@ -124,10 +124,12 @@ p1
 
 ```
 
-## Statistical Inference
-Reading from the graph, Covid-19 confirmed cases drastically rise from January to March and leveled at around 80000 cases from March to April. Many articles I have read commonly would compare the COVID-19 with other respiratory virus, such as SARS, in terms of their spead or transmission ability in the human society. 
+You may be confused with the x-axis labels on my ggplot output. That is Chinese characters. Unfortunately, my laptop has come with the initial configuration of Chinese character which followed by ggplot. I have tried numerous ways to change it to English characters but failed all the time. **If you know anything about a feasible solution, please don't hesitate to contact me**
 
-The assessment of COVID-19 transimision ability will be the focus of this report.
+## Statistical Inference
+Reading from the graph, Covid-19 confirmed cases drastically rose from January to March, reached 30000 in April and showed no sign of a decreasing afterwards. Many articles I have read commonly would compare the COVID-19 with other respiratory virus, such as SARS, in terms of their spead or transmission ability in the human society. 
+
+The assessment of COVID-19 transimision ability will be the focus of the remaining report.
 
 ### SIR Model
 To find the transmission ability of COVID-19, we will utilize the SIR model for epidemic. This model simplifies complex situation of a epidemic (pandemic in this case) into a single system where individuals can only have three states (considered as function of time t):
@@ -138,9 +140,9 @@ To find the transmission ability of COVID-19, we will utilize the SIR model for 
 
 #### Futher Rate Assumption
 In this model, we assume further there are 3 more quantities:
-1. $\lambda$ is the uniform probability of being infected, note that it is not constant. It must consider other factors like the spreadness of the virus. E.g. if everyone around you has been infected, then there is a larger change that you get infected than an average person.
-2. $\mu$ is the uniform probability of being dead. This is a very small quantity since it is the natural death rate of the whole world population. We ignore this quantity.
-3. $\gamma$ is the uniform probability of being recovered
+1. $\lambda$ is the uniform probability of being infected, note that it is not constant. It must consider other factors like the spreadness of the virus. E.g. if everyone around you has been infected, then there is a larger change that you get infected than an average person. \par
+2. $\mu$ is the uniform probability of being dead. This is a very small quantity since it is the natural death rate of the whole world population. We ignore this quantity. \par
+3. $\gamma$ is the uniform probability of being recovered \par
 
 Based on the model assumption and the further rate assumption, we were able to obtain the following system of Diffferential Equations
 
@@ -156,8 +158,8 @@ where $B$ is the bith rate of the population
 #### Relationship between each assumed varible
 
 By solving the system of differential equation, we were able to obtain
-\[  I(t) = I_{0}e^{(R_{0} - 1)(\gamma + \mu)t} \approx I_{0}e^{(R_{0}
-    - 1) \gamma t}  \]
+\[I(t) = I_{0}e^{(R_{0} - 1)(\gamma + \mu)t} \approx I_{0}e^{(R_{0}
+    - 1) \gamma t}\]
 Where $I_{0}$ is the intial amount of people getting infected. Note
 that clearly not every quantity is constant otherwise $I(t)$ will never
 decrease. This is a model for early stage
@@ -188,13 +190,13 @@ Now we perform **Maximum Likelihood Method** and get
   \begin{equation}
   \begin{aligned}
     L(\theta) &=
-    \Pi_{i=1^{n}}\frac{e^{(-\theta)}\theta^{y_{i}}}{y_{i}!}\\
+    \Pi_{i=1}^{n}\frac{e^{(-\theta)}\theta^{y_{i}}}{y_{i}!}\\
               &=
               (\Pi_{i=1}^{n}\frac{1}{y_{i}!})e^{-n\theta}\theta^{\sum_{i=1}^{n}y_{i}}\\
               &=Ce^{-n\theta}\theta^{\sum_{i=1}^{n}y_{i}}
 \end{aligned}
   \end{equation}
-
+where the C is standing for the proportionality.
 
 We write this function in R
 ``` {r}
@@ -226,10 +228,10 @@ mle_result <- optimize(poiLLF, interval = c(0, 300),maximum = TRUE)
 mle_result
 ```
 
+From our output, 142.5341 is the maximum likelihood estimate of gamma. 
 ``` {r}
-gamma_mle <- 1/mle_result$maximum
+gamma_mle <- mle_result$maximum
 ```
-which our estimation of gamma is 0.001145181
 
 #### Estimation of $R_0$
 \[  I(t) = I_{0}e^{(R_{0} - 1)(\gamma + \mu)t} \approx I_{0}e^{(R_{0}
@@ -258,17 +260,14 @@ log_lm <- lm(Log_Confirmed ~ Days, data = logconfirmed_df)
 summary(log_lm)
 ```
 
-From the regression coefficient, we estimated that `logI \sim -0.698895 + 0.135525t`. Thus, $(R_0 - 1)\gamma = 0.135525$. We have estimated that $\hat{\gamma} = 0.0070956$. Hence, 
-\[ \hat{R_0} = \frac{0.135525}{\gamma} + 1 = 19.09989]
+From the regression coefficient, we estimated that `logI \sim -0.698895 + 0.135525t`. Thus, $(R_0 - 1)\gamma = 0.135525$. We have estimated that $\hat{\gamma} = 142.5341$. Hence, 
+\[ \hat{R_0} = \frac{0.135525}{\gamma} + 1 = 1.000951]
 
-Note that our estimated reproductive number is very high compared to any known epidemic occured in the past, which usually have an average of below 5. 
+The number 1 is what separats a highly contagious disease(>1) and a lowly contagious disease (<1). For SARS-Cov, it has a reproductive number of 2-3. Note, COVID-19 is SARS-Cov2. In comparison, based on our assumption and result, COVID-19 is less infectious than SARS-Cov. However, this is certainly not the case with what happens in the real world, which the confirmed cases are exponentially increasing everyday and every country is issuing serious warning to every citizen. 
 
-The reason for such a high value of the estimate is mainly attribute to the lack of sufficient data. Reproductive number represent how many people will be infected by any one infected people. From our graph, we can see that the values of the confirmed cases skyrocketed to at the end of our data collection periods. Before that, the cases are leveled at 0. This dramatic, sudden increase is what causes the large estimate of the reproductive number.
+The possible cause for the low reproductive number is likely due to the equal weight on every datapoint in the dataset which the first two months of small confirmed number averaged out the last two months of scary and exponential increase.
 
-However, the confirmed cases leveled at 0 does not mean that there are no confirmed cases. It only means that no confirmed cases have chosen to take a test and find out they are positive. The initial symptom for youngsters are mild; which many people may not take a serious attention. 
-
-Hopefully, the true reproductive number should be much smaller. But we can only learn that after we have gained more comprehensive data.
-
+In the meanwhile, the confirmed cases leveled around 0 in the first two months does not mean there are only this many confirmed cases in Canada at that time. It only means that this many of confirmed cases have chosen to take a test and found out they are positive. The initial symptom for youngsters are mild; which many people may not take a serious attention. 
 
 ## Predictive Forecast
 
