@@ -3,7 +3,7 @@ title: "Analysis with COVID-19 situation in Canada"
 author: "Peter Hou"
 date: "03/05/2020"
 output:
-  pdf_document: default
+  pdf_document: defaultp
   html_document: default
 ---
 
@@ -41,7 +41,6 @@ Note that the cases in each country are separated by province and date. We don't
 Therefore, we would like to consolidate all three datasets for a easier comparison of the trend of COVID-19 cases.
 
 ## Data Consolidation
-
 
 ``` {r}
 sum_province_by_ctry <- function(CovidDataDf) {
@@ -269,6 +268,18 @@ The reason for such a high value of the estimate is mainly attribute to the lack
 However, the confirmed cases leveled at 0 does not mean that there are no confirmed cases. It only means that no confirmed cases have chosen to take a test and find out they are positive. The initial symptom for youngsters are mild; which many people may not take a serious attention. 
 
 Hopefully, the true reproductive number should be much smaller. But we can only learn that after we have gained more comprehensive data.
+
+
+## Predictive Forecast
+
+There is another dataset which involves detailed record of a person who is infected.
+
+
+```{r}
+
+patient_record <- read_csv("COVID19_line_list_data.csv")
+
+```
 
 
 
