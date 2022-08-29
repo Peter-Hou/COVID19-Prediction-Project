@@ -139,7 +139,7 @@ To find the transmission ability of COVID-19, we will utilize the SIR model for 
 3. Removed: immuned to the disease or cannot infect others, denote by R
 
 #### Futher Rate Assumption
-In this model, we assume further there are 3 more quantities:
+In this model, we assume further there are 3 more quantities: \par
 1. $\lambda$ is the uniform probability of being infected, note that it is not constant. It must consider other factors like the spreadness of the virus. E.g. if everyone around you has been infected, then there is a larger change that you get infected than an average person. \par
 2. $\mu$ is the uniform probability of being dead. This is a very small quantity since it is the natural death rate of the whole world population. We ignore this quantity. \par
 3. $\gamma$ is the uniform probability of being recovered \par
@@ -254,7 +254,7 @@ logconfirmed_df <- data.frame(Days = 1:length(log_confirmed_sample),
                               Log_Confirmed = log_confirmed_sample)
 
 ggplot(logconfirmed_df, aes(x = Days, y = Log_Confirmed)) + geom_point() + geom_smooth(method = "lm") + ggtitle("Log-Transformed Confirmed Cases in Canada")
-
+```
 ``` {r}
 log_lm <- lm(Log_Confirmed ~ Days, data = logconfirmed_df)
 summary(log_lm)
@@ -269,9 +269,6 @@ The possible cause for the low reproductive number is likely due to the equal we
 
 In the meanwhile, the confirmed cases leveled around 0 in the first two months does not mean there are only this many confirmed cases in Canada at that time. It only means that this many of confirmed cases have chosen to take a test and found out they are positive. The initial symptom for youngsters are mild; which many people may not take a serious attention. 
 
-## Predictive Forecast
-
-There is another dataset which involves detailed record of a person who is infected.
 
 
 ```{r}
