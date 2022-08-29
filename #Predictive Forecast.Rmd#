@@ -1,0 +1,15 @@
+---
+title: "Predictive Forecast of COVID-19 situation in Canada"
+author: "Peter Hou"
+date: "03/05/2020"
+output:
+  pdf_document: defaultp
+  html_document: default
+---
+
+
+```{r}
+
+patient_record <- read_csv("COVID19_line_list_data.csv")
+
+```
