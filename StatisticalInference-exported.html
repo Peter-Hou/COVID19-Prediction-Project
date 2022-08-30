@@ -825,8 +825,8 @@ In this model, we assume further there are 3 more quantities:
 <div id="estimation-of-gamma" class="section level4">
 <h4>Estimation of <span class="math inline">\(\gamma\)</span></h4>
 <p>From the given fomula above, we have observation for <span class="math inline">\(I(t)\)</span> at different time point t, from january 2020 to April 2020</p>
-<p>With our assumption, <span class="math inline">\(\gamma\)</span> is the rate of recovery of the infected population <strong>over a period</strong>. Hence, <span class="math inline">\(1/\gamma\)</span> is the average time length of the period to get one recovered. We can model this process using a Poisson ditribution with <span class="math inline">\(Y_i \sim Poi(\gamma)\)</span> and we need to estimate <span class="math inline">\(\gamma\)</span>. In this case, <span class="math inline">\(Y_i\)</span> is the number of recovered people over a fixed period of time.</p>
-<p>As <span class="math inline">\(\gamma\)</span> is dealing with recovery cases, then our sample in this case would be</p>
+<p>With our assumption, <span class="math inline">\(1/\gamma\)</span> is the rate of recovery of the infected population <strong>over a period</strong>. Hence, <span class="math inline">\(\gamma\)</span> is the average time length of the period to get one recovered. We can model this process using a Poisson ditribution with <span class="math inline">\(Y_i \sim Poi(1/\gamma)\)</span> and we need to estimate <span class="math inline">\(\gamma\)</span>. In this case, <span class="math inline">\(Y_i\)</span> is the number of recovered people over a fixed period of time.</p>
+<p>As <span class="math inline">\(1/\gamma\)</span> is dealing with recovery cases, then our sample in this case would be</p>
 <pre class="r"><code>recover_sample &lt;- t_Canada_consolidate$cured
 recover_sample &lt;- diff(recover_sample, lag = 1) 
 # This is to get the data fro difference between any two days since cured is the total cases and we want each days&#39; recovery data.</code></pre>
@@ -860,8 +860,8 @@ mle_result</code></pre>
 ## 
 ## $objective
 ## [1] 49523.3</code></pre>
-<p>From our output, 142.5341 is the maximum likelihood estimate of gamma.</p>
-<pre class="r"><code>gamma_mle &lt;- mle_result$maximum</code></pre>
+<p>From our output, 142.5341 is the maximum likelihood estimate of <span class="math inline">\(1/\gamma\)</span>.</p>
+<pre class="r"><code>gamma_mle &lt;- 1/mle_result$maximum</code></pre>
 </div>
 <div id="estimation-of-r_0" class="section level4">
 <h4>Estimation of <span class="math inline">\(R_0\)</span></h4>
@@ -901,27 +901,11 @@ summary(log_lm)</code></pre>
 ## Residual standard error: 0.7385 on 84 degrees of freedom
 ## Multiple R-squared:  0.9551, Adjusted R-squared:  0.9545 
 ## F-statistic:  1785 on 1 and 84 DF,  p-value: &lt; 2.2e-16</code></pre>
-<p>From the regression coefficient, we estimated that <code>logI \sim -0.698895 + 0.135525t</code>. Thus, <span class="math inline">\((R_0 - 1)\gamma = 0.135525\)</span>. We have estimated that <span class="math inline">\(\hat{\gamma} = 142.5341\)</span>. Hence, [  =  + 1 = 1.000951]</p>
-<p>The number 1 is what separats a highly contagious disease(&gt;1) and a lowly contagious disease (&lt;1). For SARS-Cov, it has a reproductive number of 2-3. Note, COVID-19 is SARS-Cov2. In comparison, based on our assumption and result, COVID-19 is less infectious than SARS-Cov. However, this is certainly not the case with what happens in the real world, which the confirmed cases are exponentially increasing everyday and every country is issuing serious warning to every citizen.</p>
-<p>The possible cause for the low reproductive number is likely due to the equal weight on every datapoint in the dataset which the first two months of small confirmed number averaged out the last two months of scary and exponential increase.</p>
-<p>In the meanwhile, the confirmed cases leveled around 0 in the first two months does not mean there are only this many confirmed cases in Canada at that time. It only means that this many of confirmed cases have chosen to take a test and found out they are positive. The initial symptom for youngsters are mild; which many people may not take a serious attention.</p>
-<pre class="r"><code>patient_record &lt;- read_csv(&quot;COVID19_line_list_data.csv&quot;)</code></pre>
-<pre><code>## New names:
-## Rows: 1085 Columns: 27
-## -- Column specification
-## -------------------------------------------------------- Delimiter: &quot;,&quot; chr
-## (14): reporting date, summary, location, country, gender, symptom_onset,... dbl
-## (6): id, case_in_country, age, If_onset_approximated, visiting Wuhan, f... lgl
-## (7): ...4, ...22, ...23, ...24, ...25, ...26, ...27
-## i Use `spec()` to retrieve the full column specification for this data. i
-## Specify the column types or set `show_col_types = FALSE` to quiet this message.
-## * `` -&gt; `...4`
-## * `` -&gt; `...22`
-## * `` -&gt; `...23`
-## * `` -&gt; `...24`
-## * `` -&gt; `...25`
-## * `` -&gt; `...26`
-## * `` -&gt; `...27`</code></pre>
+<p>From the regression coefficient, we estimated that <code>logI \sim -0.698895 + 0.135525t</code>. Thus, <span class="math inline">\((R_0 - 1)\gamma = 0.135525\)</span>. We have estimated that <span class="math inline">\(\hat{\gamma} = 0.0070956\)</span>. Hence, <span class="math display">\[ \hat{R_0} = \frac{0.135525}{\gamma} + 1 = 19.09989\]</span></p>
+<p>Note that our estimated reproductive number is very high compared to any known epidemic occured in the past, which usually have an average of 5.</p>
+<p>The reason for such a high value of the estimate is mainly attribute to the lack of sufficient data. Reproductive number represent how many people will be infected by any one infected people. From our graph, we can see that the values of the confirmed cases skyrocketed to at the end of our data collection periods. Before that, the cases are leveled around 0. This dramatic, sudden increase is what causes the large estimate of the reproductive number.</p>
+<p>This reproductive number can only be used as an indication of the severity of COVID-19 not for an accurate estimate of the infectious ability of COVID-19 as it is too subjective. We have not factored in many other important effects like government newly posed regulation.</p>
+<p>To accurately estimate the reproductive number after the a new policy come out. It is recommendated to estimate the reproductive number by periods, e.g. weekly, monthly, yearly, etc for the observation of possible improvment.</p>
 </div>
 </div>
 </div>
