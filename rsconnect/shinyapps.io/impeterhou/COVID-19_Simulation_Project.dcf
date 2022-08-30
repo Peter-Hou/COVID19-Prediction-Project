@@ -1,0 +1,14 @@
+name: COVID-19_Simulation_Project
+title: COVID-19_Simulation_Project
+username:
+account: impeterhou
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6880306
+bundleId: 6252705
+url: https://impeterhou.shinyapps.io/COVID-19_Simulation_Project/
+when: 1661883619.54552
+lastSyncTime: 1661883619.54552
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: #Predictive Forecast.Rmd#|#test.Rmd#|.#Predictive Forecast.Rmd|.#test.Rmd|COVID19_line_list_data.csv|Predictive Forecast.Rmd|StatisticalInference-exported.html|StatisticalInference.Rmd|time_series_2019-ncov-Confirmed.csv|time_series_2019-ncov-Deaths.csv|time_series_2019-ncov-Recovered.csv|time_series_covid19_confirmed_global.csv|time_series_covid19_deaths_global.csv|time_series_covid19_recovered_global.csv

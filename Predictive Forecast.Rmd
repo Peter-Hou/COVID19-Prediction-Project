@@ -1,0 +1,106 @@
+---
+title: "Predictive Forecast for COVID-19 situation in Canada"
+author: "Peter Hou"
+date: "03/05/2020"
+output:
+  pdf_document: defaultp
+  html_document: default
+---
+
+
+# Objective:
+The last report focusing on the specific number of cases occured at different regions. This project uses data where the detailed condition of 1085 COVID infected patients. 
+
+The major objective of this product is to create model for classifying any given COVID-19 patients with a set of important information about them as likely to recover or no.
+
+``` {r}
+COVID_feature <- read.csv("COVID19_line_list_data.csv")
+summary(COVID_feature)
+```
+
+
+# Date Cleaning
+``` {r}
+cleaned_COVID_feature <- COVID_feature[c("gender", "age",
+ "symptom","death","recovered")]
+## Remove NA gender column
+cleaned_COVID_feature <-
+ cleaned_COVID_feature[which(!is.na(cleaned_COVID_feature$gender)),]
+cleaned_COVID_feature$gender <- as.character(cleaned_COVID_feature$gender)
+cleaned_COVID_feature$gender <-
+ ifelse(cleaned_COVID_feature$gender == "female", 0, 1)
+## Fill NA with average age
+cleaned_COVID_feature$age <- 
+ ifelse(is.na(cleaned_COVID_feature$age), 
+ mean(cleaned_COVID_feature$age[!is.na(cleaned_COVID_feature$age)]),
+ cleaned_COVID_feature$age)
+```
+
+## One-hot encoding
+
+## Collect Symptoms
+``` {r}
+pasted_symp <- c()
+for (val in cleaned_COVID_feature$symptom){
+ if (nchar(val) != 0){
+ local_vec <- unlist(strsplit(val, ", "))
+ for (local_val in local_vec){
+ if (is.na(match(local_val, pasted_symp))){
+ pasted_symp <- c(pasted_symp, local_val)
+ } 
+ }
+ }
+}
+pasted_symp <- pasted_symp[-50]
+
+for (index in 1:length(pasted_symp)){
+ local_column <- c()
+ for (symp in cleaned_COVID_feature$symptom){
+ if (grepl(pasted_symp[index], symp)){
+ local_column <- c(local_column, 1)
+ }
+ else{
+ local_column <- c(local_column, 0)
+ }
+ }
+ cleaned_COVID_feature <-
+ cbind(cleaned_COVID_feature[,1:(2 + index - 1)],
+ local_column,
+ cleaned_COVID_feature[,
+ ((ncol(cleaned_COVID_feature) -
+ 2):ncol(cleaned_COVID_feature))])
+ colnames(cleaned_COVID_feature)[2 + index] <- pasted_symp[index]
+}
+cleaned_COVID_feature$symptom <- NULL
+```
+
+## Combine the recovered and death columnes as response variable, result.
+
+``` {r}
+result <- ifelse(cleaned_COVID_feature$death != 0,
+ 0,
+ ifelse(cleaned_COVID_feature$recovered != 0,
+ 1, 0))
+cleaned_COVID_feature <-
+ cbind(cleaned_COVID_feature[, 1:(ncol(cleaned_COVID_feature)-2)], Result = result)
+
+head(cleaned_COVID_feature[, 1:10], 3)
+
+colnames(cleaned_COVID_feature)
+
+```
+
+# Feature Selection
+
+``` {r}
+
+model <- glm(Result ~., data = cleaned_COVID_feature, family = 'binomial', control = list(maxit = 50))
+
+intercept_model <- glm(Result ~ 1, data = cleaned_COVID_feature, family = 'binomial', control = list(maxit = 50))
+
+
+backwards = step(model)
+
+
+```
+
